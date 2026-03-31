@@ -23,10 +23,6 @@ function Initials({ name }: { name: string }) {
   );
 }
 
-function TrendIndicator({ current, best }: { current: number; best: number }) {
-  if (best <= current) return null; // huidig IS best, geen trend tonen
-  return null;
-}
 
 function VdotTrend({ results }: { results: AthleteWithStats['results'] }) {
   if (results.length < 2) return null;

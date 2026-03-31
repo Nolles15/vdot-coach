@@ -39,13 +39,6 @@ function ToggleGroup<T extends string>({
   );
 }
 
-const DANIELS_ZONE_CONFIG = [
-  { label: 'Easy (E)',       color: ZONE_COLORS[1] },
-  { label: 'Marathon (M)',   color: ZONE_COLORS[3] },
-  { label: 'Threshold (T)',  color: ZONE_COLORS[5] },
-  { label: 'Interval (I)',   color: ZONE_COLORS[7] },
-  { label: 'Repetition (R)', color: ZONE_COLORS[9] },
-];
 
 export default function ZonesTabel({ vdot, defaultMode = 'both' }: Props) {
   const { t } = useTranslation();
