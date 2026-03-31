@@ -3,6 +3,7 @@ const nl = {
   app_name: 'VDOT Coach',
   nav_athletes: 'Atleten',
   nav_overview: 'Zones-overzicht',
+  nav_method: 'Methode',
 
   // Dashboard
   add_athlete: '+ Atleet toevoegen',

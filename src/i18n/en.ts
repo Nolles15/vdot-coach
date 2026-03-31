@@ -2,6 +2,7 @@ const en = {
   app_name: 'VDOT Coach',
   nav_athletes: 'Athletes',
   nav_overview: 'Zones overview',
+  nav_method: 'Method',
 
   add_athlete: '+ Add athlete',
   athlete_name_placeholder: 'Athlete name',

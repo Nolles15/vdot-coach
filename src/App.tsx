@@ -4,6 +4,7 @@ import './i18n/index';
 import Dashboard from './pages/Dashboard';
 import AtleetPagina from './pages/AtleetPagina';
 import PubliekePagina from './pages/PubliekePagina';
+import MethodePagina from './pages/MethodePagina';
 
 function Header() {
   const { t, i18n } = useTranslation();
@@ -27,9 +28,14 @@ function Header() {
 
         <div className="flex items-center gap-4">
           {!isPublic && (
-            <Link to="/" className="text-sm text-slate-400 hover:text-slate-100 transition-colors font-medium">
-              {t('nav_athletes')}
-            </Link>
+            <>
+              <Link to="/" className="text-sm text-slate-400 hover:text-slate-100 transition-colors font-medium">
+                {t('nav_athletes')}
+              </Link>
+              <Link to="/methode" className="text-sm text-slate-400 hover:text-slate-100 transition-colors font-medium">
+                {t('nav_method')}
+              </Link>
+            </>
           )}
           <div className="flex rounded-lg overflow-hidden border border-slate-700 text-xs font-semibold">
             <button
@@ -68,6 +74,7 @@ function AppRoutes() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/atleet/:id" element={<AtleetPagina />} />
           <Route path="/p/:id" element={<PubliekePagina />} />
+          <Route path="/methode" element={<MethodePagina />} />
         </Routes>
       </main>
     </div>
