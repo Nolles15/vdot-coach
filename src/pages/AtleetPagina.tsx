@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toPng } from 'html-to-image';
 import {
   getAthleteById, getTestResults, deleteTestResult,
   type Athlete, type TestResult,
@@ -16,6 +17,8 @@ export default function AtleetPagina() {
   const [athlete, setAthlete] = useState<Athlete | null>(null);
   const [results, setResults] = useState<TestResult[]>([]);
   const [copied, setCopied] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
 
   async function load() {
     if (!id) return;
@@ -34,6 +37,31 @@ export default function AtleetPagina() {
     navigator.clipboard.writeText(`${window.location.origin}/p/${id}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function handleExport() {
+    if (!exportRef.current || !athlete) return;
+    setExporting(true);
+    try {
+      const dataUrl = await toPng(exportRef.current, {
+        backgroundColor: '#0f172a',
+        pixelRatio: 2,
+        // Sla elementen met de klasse 'export-ignore' over (knoppen, formulier)
+        filter: (node) =>
+          !(node instanceof HTMLElement) || !node.classList.contains('export-ignore'),
+      });
+      const link = document.createElement('a');
+      const safeName = athlete.name.trim().replace(/\s+/g, '-').toLowerCase();
+      const date = new Date().toISOString().slice(0, 10);
+      link.download = `${safeName}-vdot-${date}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Export mislukt:', err);
+      window.alert('Export mislukt. Probeer het opnieuw.');
+    } finally {
+      setExporting(false);
+    }
   }
 
   async function handleDelete(rid: string) {
@@ -57,43 +85,57 @@ export default function AtleetPagina() {
   }
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <Link to="/" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-200 transition-colors font-medium">
+    <div ref={exportRef} className="space-y-5">
+      {/* Actiebalk — niet in de export */}
+      <div className="export-ignore flex items-center justify-between flex-wrap gap-3">
+        <Link to="/" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-200 transition-colors font-medium">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Terug
+        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="flex items-center gap-2 text-sm border border-slate-700 rounded-lg px-3 py-1.5 transition-all font-medium text-slate-400 hover:border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-400 disabled:opacity-50"
+          >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M7 1V9M7 9L4 6M7 9L10 6M2 11V12C2 12.55 2.45 13 3 13H11C11.55 13 12 12.55 12 12V11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            Terug
-          </Link>
-          <span className="text-slate-700">/</span>
-          <h1 className="text-xl font-bold text-slate-100">{athlete.name}</h1>
+            {exporting ? 'Exporteren…' : 'Exporteer PNG'}
+          </button>
+          <button
+            onClick={copyPublicLink}
+            className={`flex items-center gap-2 text-sm border rounded-lg px-3 py-1.5 transition-all font-medium ${
+              copied
+                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                : 'border-slate-700 hover:border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-400 text-slate-400'
+            }`}
+          >
+            {copied ? (
+              <>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2 7L5.5 10.5L12 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                {t('link_copied')}
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M8 2H10C11.1 2 12 2.9 12 4V10C12 11.1 11.1 12 10 12H4C2.9 12 2 11.1 2 10V8M5 2H4C2.9 2 2 2.9 2 4V5M6 8L10 4M10 4H7.5M10 4V6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                {t('public_link')}
+              </>
+            )}
+          </button>
         </div>
-        <button
-          onClick={copyPublicLink}
-          className={`flex items-center gap-2 text-sm border rounded-lg px-3 py-1.5 transition-all font-medium ${
-            copied
-              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
-              : 'border-slate-700 hover:border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-400 text-slate-400'
-          }`}
-        >
-          {copied ? (
-            <>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2 7L5.5 10.5L12 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              {t('link_copied')}
-            </>
-          ) : (
-            <>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M8 2H10C11.1 2 12 2.9 12 4V10C12 11.1 11.1 12 10 12H4C2.9 12 2 11.1 2 10V8M5 2H4C2.9 2 2 2.9 2 4V5M6 8L10 4M10 4H7.5M10 4V6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              {t('public_link')}
-            </>
-          )}
-        </button>
+      </div>
+
+      {/* Titelregel — wél in de export */}
+      <div className="flex items-center justify-between gap-3 pb-1">
+        <h1 className="text-2xl font-bold text-slate-100">{athlete.name}</h1>
+        <span className="text-sm font-bold text-slate-500 tracking-tight">VDOT Coach</span>
       </div>
 
       {/* VDOT hero */}
@@ -115,8 +157,10 @@ export default function AtleetPagina() {
         </div>
       )}
 
-      {/* Test invoer */}
-      <TestInvoerForm athleteId={athlete.id} onSaved={load} />
+      {/* Test invoer — niet in de export */}
+      <div className="export-ignore">
+        <TestInvoerForm athleteId={athlete.id} onSaved={load} />
+      </div>
 
       {/* Zones */}
       {latestResult && (
